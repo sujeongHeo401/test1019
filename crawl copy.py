@@ -16,7 +16,7 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 
 d_list = []
 start_data = 20211019
-end_data = 20211021
+end_data = 20211020
 for date_int in range(start_data, end_data):
     print("헿")
     date = str(date_int)
@@ -34,16 +34,16 @@ for date_int in range(start_data, end_data):
             d['src'] = "https://news.naver.com/" + new.a['href']
             # 내용 수집
             reqCont = requests.get(d['src'], headers=headers).text
-            d['content'] = get_news_content(headers, d['src'])
             d['title'] = new.a.text
             d['date'] = date
+            d['content'] = get_news_content(headers, d['src'])
             d_list.append(d)
 df = pd.DataFrame(d_list)
 
 
-""" 필요 없는 문자 제거 """
-def clean_text(row):
-    text = row['content']
+""" 필요 없는 문자 제거 ( 타이틀 ) """
+def clean_title_text(row):
+    text = row['title']
     pattern = '([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)'
     text = re.sub(pattern=pattern, repl='', string=text)
     # print("E-mail제거 : " , text , "\n")
@@ -77,8 +77,7 @@ def clean_text(row):
     return text
 
 
-# df['title_c'] = df.apply(clean_text, axis=1)
-df['content_c'] = df.apply(clean_text, axis=1)
+df['title_c'] = df.apply(clean_title_text, axis=1)
 
 
 """ 키워드 추출 from title """
@@ -89,7 +88,7 @@ kkma = Kkma()
 komoran = Komoran()
 df['word'] = ''
 for idx_line in range(len(df)):
-    nouns_list = komoran.nouns(df['content_c'].loc[idx_line])
+    nouns_list = komoran.nouns(df['title_c'].loc[idx_line])
     nouns_list_c = [nouns for nouns in nouns_list if len(nouns) > 1]    # 한글자는 이상한게 많아서 2글자 이상
     # df.loc[[idx_line], 'keyword'] = set(nouns_list_c)
     df.at[idx_line, 'word'] = set(nouns_list_c) if len(set(nouns_list_c)) > 0 else {}
@@ -116,12 +115,12 @@ def add_word(tx):
 """ 한자와 공백 제거 """
 # Neo4j -> Gephi 에서 parsing error의 원인이 될 수 있음
 def clean_text_for_neo4j(row):
-    text = row['content_c']
+    text = row['title_c']
     text = re.sub(pattern='[^a-zA-Z0-9ㄱ-ㅣ가-힣]', repl='', string=text)
     # print("영어, 숫자, 한글만 포함 : ", text )
     return text
 
-df['content_c_neo4j'] = df.apply(clean_text_for_neo4j, axis=1)
+df['title_c_neo4j'] = df.apply(clean_text_for_neo4j, axis=1)
 
 
 
@@ -136,6 +135,6 @@ greeter = GraphDatabase.driver("bolt://localhost:7687", auth=("test1019", "test1
 with greeter.session() as session:
     """ make node """
     for idx in range(len(df)):
-        session.write_transaction(add_news, title=df.iloc[idx]['content_c_neo4j'], date=df.iloc[idx]['date']
+        session.write_transaction(add_news, title=df.iloc[idx]['title_c_neo4j'], date=df.iloc[idx]['date']
                                   ,word=list(df.iloc[idx]['word']))
     session.write_transaction(add_word)
