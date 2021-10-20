@@ -132,7 +132,7 @@ greeter = GraphDatabase.driver("bolt://localhost:7687", auth=("test1019", "test1
 with greeter.session() as session:
     """ make node """
     for idx in range(len(df)):
-        session.write_transaction(add_article, title=df.iloc[idx]['title_c_neo4j'], date=df.iloc[idx]['date'],
+        session.write_transaction(add_news, title=df.iloc[idx]['title_c_neo4j'], date=df.iloc[idx]['date'],
                                   media=df.iloc[idx]['media'], keyword=list(df.iloc[idx]['keyword']))
     session.write_transaction(add_media)
     session.write_transaction(add_keyword)
