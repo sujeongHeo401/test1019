@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup as BS
 import pandas as pd
 import numpy as np
 import re
+from datetime import date, timedelta
 
 """" 개별 컨텐츠만 가져오기"""
 def get_news_content(headers, url):
@@ -15,11 +16,15 @@ def get_news_content(headers, url):
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
 
 d_list = []
-start_data = 20180420
-end_data = 20211020
-for date_int in range(start_data, end_data):
-    print("헿")
-    date = str(date_int)
+start_date = date(2020, 11, 16) # 네이버 랭크 뉴스 이때부터 시작합
+end_date = date(2021, 10, 21) 
+
+def daterange(start_date, end_date): 
+    for n in range(int((end_date - start_date).days)): 
+        yield start_date + timedelta(n)
+
+for single_date in daterange(start_date, end_date):
+    date = single_date.strftime("%Y%m%d")
     url = "https://news.naver.com/main/ranking/popularDay.nhn?date=" + date
     html = requests.get(url, headers=headers).text
     soup = BS(html, 'html.parser')
