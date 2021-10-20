@@ -10,7 +10,7 @@ def get_news_content(headers, url):
     reqCont = requests.get(url, headers=headers).text
     soupGetContext = BS(reqCont, 'html.parser')
     each_news_content = soupGetContext.find(class_='_article_body_contents')
-    return each_news_content.text
+    return each_news_content.text if each_news_content else ''
 
 """ 네이버 랭킹 뉴스 긁어오기 """
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
