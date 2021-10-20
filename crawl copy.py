@@ -15,7 +15,7 @@ def get_news_content(headers, url):
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
 
 d_list = []
-start_data = 2020911
+start_data = 20180420
 end_data = 20211020
 for date_int in range(start_data, end_data):
     print("헿")
