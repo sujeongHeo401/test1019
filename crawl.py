@@ -81,8 +81,9 @@ for idx_line in range(len(df)):
     nouns_list = komoran.nouns(df['title_c'].loc[idx_line])
     nouns_list_c = [nouns for nouns in nouns_list if len(nouns) > 1]    # 한글자는 이상한게 많아서 2글자 이상
     # df.loc[[idx_line], 'keyword'] = set(nouns_list_c)
-    df.loc[[idx_line], 'keyword'] = [set(nouns_list_c)]
+    df.at[idx_line, 'keyword'] = set(nouns_list_c) if len(set(nouns_list_c)) > 0 else {}
 df = df[df['media'] != '코리아헤럴드']    # 코리아헤럴드는 영어 제목임
 df = df[df['media'] != '주간경향']    # 주간경향은 같은 title이 많음
 
 print("df: ", df['keyword'])
+df.to_csv('test.csv',index=False)
