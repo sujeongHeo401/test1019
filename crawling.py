@@ -41,7 +41,6 @@ class run_crawling:
                 d['media'] = media if media else None
                 d['src'] = "https://news.naver.com/" + new.a['href']
                 # 내용 수집
-                print("d['src'] : ", d['src'] )
                 reqCont = requests.get(d['src'], headers=self.headers).text if requests.get(d['src'], headers=self.headers) !=None else None
                 d['title'] = new.a.text if new.a.text != None else None
                 d['date'] = date if date != None else None
@@ -77,6 +76,7 @@ if __name__ == "__main__":
     start_date = date(2020, 11, 16) # 네이버 랭크 뉴스 이때부터 시작합
     end_date = date(2021, 11, 17) 
     for single_date in daterange(start_date, end_date):
+        print("date: ", single_date.strftime("%Y%m%d"))
         a = run_crawling(single_date)
         a.make_data_frame()
         a.connect_and_add_to_neo4j()
