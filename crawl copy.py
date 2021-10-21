@@ -10,7 +10,7 @@ def get_news_content(headers, url):
     reqCont = requests.get(url, headers=headers).text
     soupGetContext = BS(reqCont, 'html.parser')
     each_news_content = soupGetContext.find(class_='_article_body_contents')
-    return each_news_content.text if each_news_content else ''
+    return each_news_content.text if each_news_content !=None else None
 
 """ 네이버 랭킹 뉴스 긁어오기 """
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
@@ -27,59 +27,28 @@ for single_date in daterange(start_date, end_date):
     date = single_date.strftime("%Y%m%d")
     url = "https://news.naver.com/main/ranking/popularDay.nhn?date=" + date
     html = requests.get(url, headers=headers).text
-    soup = BS(html, 'html.parser')
-    ranking_total = soup.find_all(class_='rankingnews_box')
+    soup = BS(html, 'html.parser') if html !=None else None
+    ranking_total = soup.find_all(class_='rankingnews_box') if soup != None else None
 
     for item in ranking_total:
-        media = item.a.strong.text
-        news = item.find_all(class_="list_content")
+        media = item.a.strong.text if item.a.strong.text != None else None
+        news = item.find_all(class_="list_content") if item.find_all(class_="list_content") != None else None
         for new in news:
             d = {}
-            d['media'] = media
+            d['media'] = media if media else None
             d['src'] = "https://news.naver.com/" + new.a['href']
             # 내용 수집
-            reqCont = requests.get(d['src'], headers=headers).text
-            d['title'] = new.a.text
-            d['date'] = date
+            print("d['src'] : ", d['src'] )
+            reqCont = requests.get(d['src'], headers=headers).text if requests.get(d['src'], headers=headers) !=None else None
+            d['title'] = new.a.text if new.a.text != None else None
+            d['date'] = date if date != None else None
             d['content'] = get_news_content(headers, d['src'])
             d_list.append(d)
+
 df = pd.DataFrame(d_list)
 
 
-""" 필요 없는 문자 제거 ( 타이틀 ) """
-def clean_title_text(row):
-    text = row['title']
-    pattern = '([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("E-mail제거 : " , text , "\n")
-    pattern = '(http|ftp|https)://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("URL 제거 : ", text , "\n")
-    pattern = '([ㄱ-ㅎㅏ-ㅣ]+)'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("한글 자음 모음 제거 : ", text , "\n")
-    pattern = '<[^>]*>'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("태그 제거 : " , text , "\n")
-    pattern = r'\([^)]*\)'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("괄호와 괄호안 글자 제거 :  " , text , "\n")
-    pattern = '[^\w\s]'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("특수기호 제거 : ", text , "\n" )
-    pattern = '[^\w\s]'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("필요없는 정보 제거 : ", text , "\n" )
-    pattern = '["단독"]'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    pattern = '["속보"]'
-    text = re.sub(pattern=pattern, repl='', string=text)
-    # print("단독 속보 제거 : ", text , "\n" )
-    text = text.strip()
-    # print("양 끝 공백 제거 : ", text , "\n" )
-    text = " ".join(text.split())
-    # print("중간에 공백은 1개만 : ", text )
-    return text
+
 
 
 df['title_c'] = df.apply(clean_title_text, axis=1)
