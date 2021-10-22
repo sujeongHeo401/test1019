@@ -9,6 +9,7 @@ from konlpy.tag import Komoran
 from neo4j import GraphDatabase
 from clean_text import clean_title_text, clean_text
 from neo4j_func import add_news, add_word
+from multiprocessing import Pool
 
 kkma = Kkma()
 komoran = Komoran()
@@ -29,10 +30,12 @@ class run_crawling:
     def make_data_frame(self):
         date = self.crawlDate.strftime("%Y%m%d")
         url = "https://news.naver.com/main/ranking/popularDay.nhn?date=" + date
+        print("baase url : ", url)
+        print("date : ", date)
         html = requests.get(url, headers=self.headers).text
         soup = BS(html, 'html.parser') if html !=None else None
         ranking_total = soup.find_all(class_='rankingnews_box') if soup != None else None
-
+    
         for item in ranking_total:
             media = item.a.strong.text if item.a.strong.text != None else None
             news = item.find_all(class_="list_content") if item.find_all(class_="list_content") != None else None
@@ -57,27 +60,38 @@ class run_crawling:
         self.df = self.df[self.df['media'] != '코리아헤럴드']    # 코리아헤럴드는 영어 제목임
         self.df = self.df[self.df['media'] != '주간경향']    # 주간경향은 같은 title이 많음
         self.df['title_c_neo4j'] = self.df.apply(clean_text, axis=1)
-        
-    def connect_and_add_to_neo4j(self):
-        # self.df['title_c_neo4j'] = self.df.apply(clean_text, axis=1)
         greeter = GraphDatabase.driver("bolt://localhost:7687", auth=("test1019", "test1019"))  
         with greeter.session() as session:
             for idx in range(len(self.df)):
+                print("연결!!!")
                 session.write_transaction(add_news, title=self.df.iloc[idx]['title_c_neo4j'], date=self.df.iloc[idx]['date']
                                         ,word=list(self.df.iloc[idx]['word']))
             session.write_transaction(add_word)
+        
 
 """ 네이버 랭킹 뉴스 긁어오기 """
 def daterange(start_date, end_date): 
     for n in range(int((end_date - start_date).days)): 
         yield start_date + timedelta(n)
 
+def funcjj(single_date):
+    print("안오 ㅏ??")
+    a = run_crawling(single_date)
+    a.make_data_frame()
+
 if __name__ == "__main__":
-    start_date = date(2020, 11, 16) # 네이버 랭크 뉴스 이때부터 시작합
-    end_date = date(2021, 11, 17) 
+    start_date = date(2020, 12, 11) # 네이버 랭크 뉴스 이때부터 시작합
+    end_date = date(2021, 10, 22) 
+    datelist = []
     for single_date in daterange(start_date, end_date):
-        print("date: ", single_date.strftime("%Y%m%d"))
-        a = run_crawling(single_date)
-        a.make_data_frame()
-        a.connect_and_add_to_neo4j()
+        datelist.append(single_date)
+    # for single_date in daterange(start_date, end_date):
+    #     print("date: ", single_date.strftime("%Y%m%d"))
+    #     datelist
+    #     a = run_crawling(single_date)
+    #     a.make_data_frame()
+    #     a.connect_and_add_to_neo4j()
+    
+    pool = Pool(processes=4)
+    pool.map(funcjj, datelist)
 
