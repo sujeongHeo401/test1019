@@ -23,7 +23,7 @@ npm run start
 ![캡처](file\pic111.jpg)
 
 ### 화면  예시
-![capture](file\file\Hnet.com-image.gif)
+![capture](file\Hnet.com-image.gif)
 
 
 
