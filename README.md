@@ -1,7 +1,12 @@
 ### 크롤러 실행법
 
 ```
+cd crawling_server
+
+pip install 
+
 python crawling_server/crawling.py
+
 ```
 
 ### 프론트 엔드 실행법

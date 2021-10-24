@@ -28,6 +28,9 @@
   color: #61dafb;
 }
 
+tr :hover {
+  background-color: #f8f8f8;
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

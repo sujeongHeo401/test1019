@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import { getNewsList } from "./utils";
+import { getNewsList, recommendByWord, recommendByNews } from "./utils";
 import './App.css';
 import React, { useEffect, useState } from 'react';
  
@@ -19,11 +19,11 @@ function App() {
    setListVal(a);
   }
   
-  const clickNews = (value) => {
+  const clickNews = async(value) => {
     setRecommendNews([]); //초기화
     console.log("value:" ,value);
-    setRecommendNews(['추천 뉴스1', '추천 뉴스2', '추천 뉴스3']);
-
+    let recByNews = await recommendByNews(value);
+    setRecommendNews(recByNews);
   }
 
   const keywordChange = (val) =>{
@@ -32,42 +32,49 @@ function App() {
     console.log("searchKeyword: ", searchKeyword);
   }
 
-  const searchByKeyword =() => {
+  const searchByKeyword = async () => {
     console.log("최종 keyword, 이걸 이제 server 로 넘길 예정 .. ");
     console.log("seachKeyword: ", searchKeyword);
+    let b = await recommendByWord(searchKeyword);
+    setRecommendNews(b);
+
   }
 
 
 
 
-  let brr = listVal.map((value, key) => <li key = {key} onClick={() => clickNews(value)} style={{cursor:'pointer'}}>{value[0].properties.title}</li>);
+  let brr = listVal?listVal.map((value, key) => <tr key = {key} ><td key = {key} onClick={() => clickNews(value[0].properties.title)} style={{cursor:'pointer', border: '1px solid black'}}>{value[0].properties.title}</td></tr>):[];
   // let testList = ['뉴스1', '뉴스2', '뉴스3', '뉴스4']
   // let brr = testList.map((value, key) => <li onClick={() => clickNews(value)} style={{cursor:'pointer'}} key = {key}>{value}</li>);
   
   console.log("recommendNews", recommendNews);
-  let recBrr = recommendNews ? recommendNews.map((value, key) => <li onClick={() => clickNews(value)} key = {key}>{value}</li>) : [];
+  let recBrr = recommendNews?recommendNews.map((value, key) => <tr key = {key} ><td key = {key}>{value[0]}</td></tr>):[];
 
   return (
     <>
       <div className="outer" style={{marginLeft:'auto', marginRight: 'auto',  padding: 20, width: '100%'}} >
+        <div style={{"marginBottom": 10}} >과제</div>
           <input type="text"
-              placeholder="keyword 입력😂" 
-              maxLength='40'
-              style={{"width" : "90%", "height": "10%"}}
+              placeholder="keyword 입력" 
+              maxLength='20'
+              style={{"width" : "40%", "height": "10%", "marginBottom": 10}}
               onChange={ keywordChange }  
           />
           <button type="submit">
-            <i className="fa fa-sign-in" onClick={ searchByKeyword }></i>
+            <i className="fa fa-sign-in" onClick={searchByKeyword}></i>
           </button>
-          <div> neo4j 뉴스 리스트</div>
           <div>
-            <ul>
+            <table> 
+              <tr>
+                <th>neo4j 뉴스 리스트</th>
+              </tr>
               {/* 리스트 생성 */}
               {brr}
-            </ul>
+            </table>
+
           </div>
           <div className="whenClick" >
-            <p>유사한 항목들</p>
+            <p><b>유사한 항목들</b></p>
             { recommendNews.length && 
               <>
                 
@@ -85,9 +92,6 @@ function App() {
     </>
   );
 }
-
-
-
 
 
 export default App;

@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from konlpy.tag import Kkma
 from konlpy.tag import Komoran
 from neo4j import GraphDatabase
-from clean_text import clean_title_text, clean_text
+from clean_text import clean_title_text, clean_text, clean_content_text
 from neo4j_func import add_news, add_word
 from multiprocessing import Pool
 
@@ -51,9 +51,10 @@ class run_crawling:
                 self.d_list.append(d)
         self.df  = pd.DataFrame(self.d_list)
         self.df['title_c'] = self.df.apply(clean_title_text, axis=1)
+        self.df['content_c'] = self.df.apply(clean_title_text, axis=1)
         self.df['word'] = ''
         for idx_line in range(len(self.df)):
-            nouns_list = komoran.nouns(self.df['title_c'].loc[idx_line])
+            nouns_list = komoran.nouns(self.df['content_c'].loc[idx_line])
             nouns_list_c = [nouns for nouns in nouns_list if len(nouns) > 1]    # 한글자는 이상한게 많아서 2글자 이상
             # df.loc[[idx_line], 'keyword'] = set(nouns_list_c)
             self.df.at[idx_line, 'word'] = set(nouns_list_c) if len(set(nouns_list_c)) > 0 else {}
@@ -80,7 +81,7 @@ def funcjj(single_date):
     a.make_data_frame()
 
 if __name__ == "__main__":
-    start_date = date(2020, 12, 11) # 네이버 랭크 뉴스 이때부터 시작합
+    start_date = date(2020, 11, 16) # 네이버 랭크 뉴스 이때부터 시작합
     end_date = date(2021, 10, 22) 
     datelist = []
     for single_date in daterange(start_date, end_date):
@@ -92,6 +93,6 @@ if __name__ == "__main__":
     #     a.make_data_frame()
     #     a.connect_and_add_to_neo4j()
     
-    pool = Pool(processes=4)
+    pool = Pool(processes=8)
     pool.map(funcjj, datelist)
 
