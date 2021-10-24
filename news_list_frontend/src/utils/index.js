@@ -1,22 +1,21 @@
 const neo4j = require('neo4j-driver');
 const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("test1019", "test1019"));
-export const  getNewsList = async() => {
+export const  getNewsList = async(page) => {
     let session = driver.session();
     console.log("sdfsdf");
     let skipNum = 0;
 
     try {
       const result = await session.run(
-        'MATCH (a:News) RETURN a LIMIT 10',
+        'MATCH (a:News) RETURN a SKIP ' + page*10 + ' LIMIT 10',
       )
 
       return result.records.map((ele) => {
         return ele._fields  
       })
-      
-
       // console.log(node.properties.name)
-    } catch {
+    } catch(err) {
+      console.log("err: ", err);
       console.log("세션 닫혔음 .. ");
       return [];
     } finally {
@@ -29,7 +28,6 @@ export const  getNewsList = async() => {
   export const  recommendByWord = async(word) => {
     let session = driver.session();
     console.log("입력 받은 단어 : ", word);
-    console.log("안 오냐 ????");
     try {
       const result =await session.run(
         'MATCH (word:Word {name: "' + String(word) + '"})<-[:Include]-(news:News)' + 

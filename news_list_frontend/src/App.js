@@ -10,12 +10,12 @@ function App() {
   const [searchKeyword, setSearchKeyword] = useState(null);
   const [recommendNews, setRecommendNews] = useState([]);
   useEffect(()=>{
-    getListFromNeo4j();
+    getListFromNeo4j(page);
   },[]);
   
 
-  const getListFromNeo4j = async() => {
-   const a = await getNewsList();
+  const getListFromNeo4j = async(page) => {
+   const a = await getNewsList(page);
    setListVal(a);
   }
   
@@ -40,15 +40,26 @@ function App() {
 
   }
 
+  const prevtBtn = () => {
+    if (page - 1 >= 0){
+      getListFromNeo4j(page - 1);
+      setPage(page - 1);
+      
+    }
+  }
 
-
+  const nextBtn = () => {
+    getListFromNeo4j(page + 1);
+    setPage(page + 1);
+  }
+  
 
   let brr = listVal?listVal.map((value, key) => <tr key = {key} ><td key = {key} onClick={() => clickNews(value[0].properties.title)} style={{cursor:'pointer', border: '1px solid black'}}>{value[0].properties.title}</td></tr>):[];
   // let testList = ['뉴스1', '뉴스2', '뉴스3', '뉴스4']
   // let brr = testList.map((value, key) => <li onClick={() => clickNews(value)} style={{cursor:'pointer'}} key = {key}>{value}</li>);
   
   console.log("recommendNews", recommendNews);
-  let recBrr = recommendNews?recommendNews.map((value, key) => <tr key = {key} ><td key = {key}>{value[0]}</td></tr>):[];
+  let recBrr = recommendNews?recommendNews.map((value, key) => <li key = {key}>{value[0]}</li>):[];
 
   return (
     <>
@@ -71,8 +82,10 @@ function App() {
               {/* 리스트 생성 */}
               {brr}
             </table>
-
           </div>
+          <button onClick={prevtBtn}>prev</button>
+          <span>{page}</span>
+          <button onClick={nextBtn}>next</button>
           <div className="whenClick" >
             <p><b>유사한 항목들</b></p>
             { recommendNews.length && 
