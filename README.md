@@ -20,10 +20,10 @@ npm run start
 ```
 
 ### neo4j  예시
-![캡처](file\pic111.jpg)
+![캡처](/file/pic111.jpg)
 
 ### 화면  예시
-![capture](file\Hnet.com-image.gif)
+![capture](/file/Hnet.com-image.gif)
 
 
 
