@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import { getNewsList, recommendByWord, recommendByNews } from "./utils";
+import { getNewsList, recommendByWord, recommendByNews, recommendByCommunityDetection, recommendByPageRank} from "./utils";
 import './App.css';
 import React, { useEffect, useState } from 'react';
  
@@ -9,6 +9,8 @@ function App() {
   const [page, setPage] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState(null);
   const [recommendNews, setRecommendNews] = useState([]);
+  const [recommendNewsByPageRank, setRecommendNewsByPageRank] = useState([]);
+  const [recommendNewsByCommunityDetection, setRecommendNewsByCommunityDetection] = useState([]);
   useEffect(()=>{
     getListFromNeo4j(page);
   },[]);
@@ -23,7 +25,12 @@ function App() {
     setRecommendNews([]); //초기화
     console.log("value:" ,value);
     let recByNews = await recommendByNews(value);
+    let recByNewsPageRank = await recommendByPageRank(value);
+    console.log("recByNewsPageRank: ", recByNewsPageRank);
+    let recByNewsCommunityDetection = await recommendByCommunityDetection(value);
     setRecommendNews(recByNews);
+    setRecommendNewsByPageRank(recByNewsPageRank);
+    setRecommendNewsByCommunityDetection(recByNewsCommunityDetection);
   }
 
   const keywordChange = (val) =>{
@@ -60,6 +67,8 @@ function App() {
   
   console.log("recommendNews", recommendNews);
   let recBrr = recommendNews?recommendNews.map((value, key) => <li key = {key}>{value[0]}</li>):[];
+  let recBrrPageRank = recommendNewsByPageRank?recommendNewsByPageRank.map((value, key) => <li key = {key}>{value[0].properties.title}</li>):[];
+  let recBrrCommunityDetection = recommendNewsByCommunityDetection?recommendNewsByCommunityDetection.map((value, key) => <li key = {key}>{value[0]}</li>):[];
 
   return (
     <>
@@ -86,20 +95,52 @@ function App() {
           <button onClick={prevtBtn}>prev</button>
           <span>{page}</span>
           <button onClick={nextBtn}>next</button>
-          <div className="whenClick" >
-            <p><b>유사한 항목들</b></p>
-            { recommendNews.length && 
-              <>
-                
-                <ul>
-                  {/* 리스트 생성 */}
-                  {recBrr}
-                </ul>
-              </>
-            }
-             { !recommendNews.length && 
-                <p>상단의 뉴스를 클릭하면 유사한  뉴스가 나옵니다</p>
-            }
+          <div className="whenClick"  style={{display:'flex'}}>
+            <div style ={{ border : '1px solid black', marginRight: 10}}>
+              <p><b>비슷한 뉴스</b></p>
+              { recommendNews.length && 
+                <>
+                  
+                  <ul>
+                    {/* 리스트 생성 */}
+                    {recBrr}
+                  </ul>
+                </>
+              }
+              { !recommendNews.length && 
+                  <p>상단의 뉴스를 클릭하면 유사한  뉴스가 나옵니다</p>
+              }
+            </div>
+            <div style ={{ border : '1px solid black', marginRight: 10}}>
+              <p><b>비슷한 뉴스 /w pagerank </b></p>
+              { recommendNewsByPageRank.length && 
+                <>
+                  
+                  <ul>
+                    {/* 리스트 생성 */}
+                    {recBrrPageRank}
+                  </ul>
+                </>
+              }
+              { !recommendNewsByPageRank.length && 
+                  <p>상단의 뉴스를 클릭하면 유사한  뉴스가 나옵니다</p>
+              }
+            </div>
+            <div style ={{ border : '1px solid black', marginRight: 10}}>
+              <p><b>비슷한 뉴스 /w community detection</b></p>
+              { recommendNewsByCommunityDetection.length && 
+                <>
+                  
+                  <ul>
+                    {/* 리스트 생성 */}
+                    {recBrrCommunityDetection}
+                  </ul>
+                </>
+              }
+              { !recommendNewsByCommunityDetection.length && 
+                  <p>상단의 뉴스를 클릭하면 유사한  뉴스가 나옵니다</p>
+              }
+            </div>
           </div>
       </div>
     </>
