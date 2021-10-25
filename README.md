@@ -58,22 +58,23 @@ ______________________________
 ![캡처](/file/pic111.jpg)
 
 ### 화면  예시
-![capture](/file/Hnet.com-image.gif)
+![capture](/file/1026_과제화면.gif)
 
 
 
 ______________________
 
 ## 참고
-    ```
+    
     https://mons1220.tistory.com/249,
     https://konlpy-ko.readthedocs.io/ko/v0.4.3/
-    ```
+
 
     에러 수정> konlpy 설치
 
     ```
     pip install JPype1-py3
+    
     ```
     _______________________________
     GDSL (neo4j) 코드
