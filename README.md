@@ -55,10 +55,10 @@ ______________________________
 
 
 ### neo4j  예시
-![캡처](/file/pic111.jpg)
+![캡처](/file_for_github_readmd/pic111.jpg)
 
 ### 화면  예시
-![capture](/file/1026_과제화면.gif)
+![capture](/file_for_github_readmd/1026_과제화면.gif)
 
 
 
