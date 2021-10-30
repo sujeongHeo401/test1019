@@ -106,13 +106,18 @@ export const  getNewsList = async(page) => {
   export const  recommendByNodeSimilarity = async(title) => {
     let session = driver.session();
     try {
+      // const result =await session.run(
+      // `CALL gds.nodeSimilarity.stream('News_Inter', { topK: 10 })
+      //   YIELD node1, node2, similarity
+      //   WHERE gds.util.asNode(node1).title = '${title}'
+      //   RETURN gds.util.asNode(node1).title AS News1, gds.util.asNode(node2).title AS News2, similarity
+      //   ORDER BY News1`
+      // );
       const result =await session.run(
-      `CALL gds.nodeSimilarity.stream('News_Inter', { topK: 10 })
-        YIELD node1, node2, similarity
-        WHERE gds.util.asNode(node1).title = '${title}'
-        RETURN gds.util.asNode(node1).title AS News1, gds.util.asNode(node2).title AS News2, similarity
-        ORDER BY News1`
-      );
+          `MATCH (a:News {title: '${title}'})-[r:SIMILAR]->(b:News)
+          WHERE a <> b WITH r, b
+          RETURN b ORDER BY r.score DESC LIMIT 10`
+        );
 
       console.log(" recommendByNodeSimilarity result: ", result.records.map((ele) => {
         return ele._fields  
