@@ -10,7 +10,7 @@ from neo4j import GraphDatabase
 from clean_text import clean_title_text, clean_text, clean_content_text
 from neo4j_func import add_news, add_word
 from multiprocessing import Pool
-
+from sklearn.feature_extraction.text import TfidfVectorizer 
 kkma = Kkma()
 komoran = Komoran()
 
@@ -50,8 +50,8 @@ class run_crawling:
                 d['content'] = self.get_news_content(reqCont, d['src'])
                 self.d_list.append(d)
         self.df  = pd.DataFrame(self.d_list)
+        self.df['content_c'] = self.df.apply(clean_content_text, axis=1)
         self.df['title_c'] = self.df.apply(clean_title_text, axis=1)
-        self.df['content_c'] = self.df.apply(clean_title_text, axis=1)
         self.df['word'] = ''
         for idx_line in range(len(self.df)):
             nouns_list = komoran.nouns(self.df['content_c'].loc[idx_line])
@@ -61,7 +61,7 @@ class run_crawling:
         self.df = self.df[self.df['media'] != '코리아헤럴드']    # 코리아헤럴드는 영어 제목임
         self.df = self.df[self.df['media'] != '주간경향']    # 주간경향은 같은 title이 많음
         self.df['title_c_neo4j'] = self.df.apply(clean_text, axis=1)
-        greeter = GraphDatabase.driver("bolt://localhost:7687", auth=("test1019", "test1019"))  
+        greeter = GraphDatabase.driver("bolt://localhost:7687", auth=("test1028", "test1028"))  
         with greeter.session() as session:
             for idx in range(len(self.df)):
                 print("연결!!!")
@@ -82,7 +82,7 @@ def funcjj(single_date):
 
 if __name__ == "__main__":
     start_date = date(2020, 11, 16) # 네이버 랭크 뉴스 이때부터 시작합
-    end_date = date(2021, 10, 22) 
+    end_date = date(2021, 10, 30) 
     datelist = []
     for single_date in daterange(start_date, end_date):
         datelist.append(single_date)
@@ -93,6 +93,6 @@ if __name__ == "__main__":
     #     a.make_data_frame()
     #     a.connect_and_add_to_neo4j()
     
-    pool = Pool(processes=8)
+    pool = Pool(processes=10)
     pool.map(funcjj, datelist)
 
