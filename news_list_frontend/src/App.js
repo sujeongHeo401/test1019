@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import { getNewsList, recommendByWord, recommendByNews, recommendByCommunityDetection, recommendByPageRank} from "./utils";
+import { getNewsList, recommendByWord, recommendByNews, recommendByCommunityDetection, recommendByPageRank, recommendByNodeSimilarity} from "./utils";
 import './App.css';
 import React, { useEffect, useState } from 'react';
  
@@ -9,7 +9,7 @@ function App() {
   const [page, setPage] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState(null);
   const [recommendNews, setRecommendNews] = useState([]);
-  const [recommendNewsByPageRank, setRecommendNewsByPageRank] = useState([]);
+  const [recoBySimilarity, setRecoBySimilarity] = useState([]);
   const [recommendNewsByCommunityDetection, setRecommendNewsByCommunityDetection] = useState([]);
   useEffect(()=>{
     getListFromNeo4j(page);
@@ -25,11 +25,11 @@ function App() {
     setRecommendNews([]); //초기화
     console.log("value:" ,value);
     let recByNews = await recommendByNews(value);
-    let recByNewsPageRank = await recommendByPageRank(value);
-    console.log("recByNewsPageRank: ", recByNewsPageRank);
+    let recNewSimilarity = await recommendByNodeSimilarity(value);
+    console.log("recByNewsSimilarity: ", recNewSimilarity);
     let recByNewsCommunityDetection = await recommendByCommunityDetection(value);
     setRecommendNews(recByNews);
-    setRecommendNewsByPageRank(recByNewsPageRank);
+    setRecoBySimilarity(recNewSimilarity);
     setRecommendNewsByCommunityDetection(recByNewsCommunityDetection);
   }
 
@@ -67,7 +67,7 @@ function App() {
   
   console.log("recommendNews", recommendNews);
   let recBrr = recommendNews?recommendNews.map((value, key) => <li key = {key}>{value[0]}</li>):[];
-  let recBrrPageRank = recommendNewsByPageRank?recommendNewsByPageRank.map((value, key) => <li key = {key}>{value[0].properties.title}</li>):[];
+  let recBrrSimilarity = recoBySimilarity?recoBySimilarity.map((value, key) => <li key = {key}>{value[0].properties.title}</li>):[];
   let recBrrCommunityDetection = recommendNewsByCommunityDetection?recommendNewsByCommunityDetection.map((value, key) => <li key = {key}>{value[0]}</li>):[];
 
   return (
@@ -112,17 +112,17 @@ function App() {
               }
             </div>
             <div style ={{ border : '1px solid black', marginRight: 10}}>
-              <p><b>비슷한 뉴스 /w pagerank </b></p>
-              { recommendNewsByPageRank.length && 
+              <p><b>비슷한 뉴스 /w similarity </b></p>
+              { recoBySimilarity.length && 
                 <>
                   
                   <ul>
                     {/* 리스트 생성 */}
-                    {recBrrPageRank}
+                    {recBrrSimilarity}
                   </ul>
                 </>
               }
-              { !recommendNewsByPageRank.length && 
+              { !recoBySimilarity.length && 
                   <p>상단의 뉴스를 클릭하면 유사한  뉴스가 나옵니다</p>
               }
             </div>

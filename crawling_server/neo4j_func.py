@@ -11,7 +11,8 @@ def add_word(tx):
            "UNWIND a.word as w "
            "MERGE (b:Word {name:w}) "
            "MERGE (a)-[r:Include]->(b)")
-    print(result)
+    print("result.single()[0]: ", result.single()[0])
+    return result.single()[0]
 
 def get_word_list(tx):
     print("안와 ???!! ")

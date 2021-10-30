@@ -1,5 +1,5 @@
 const neo4j = require('neo4j-driver');
-const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("test1019", "test1019"));
+const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("test1028", "test1028"));
 export const  getNewsList = async(page) => {
     let session = driver.session();
     console.log("sdfsdf");
@@ -97,8 +97,35 @@ export const  getNewsList = async(page) => {
       console.log("세션 닫혔음 .. ", err);
       return [];
     } finally {
-      console.log("오지 ???")
-      await session.close()
+      console.log("오지 ???");
+      await session.close();
+    }
+
+  }
+
+  export const  recommendByNodeSimilarity = async(title) => {
+    let session = driver.session();
+    try {
+      const result =await session.run(
+      `CALL gds.nodeSimilarity.stream('News_Inter', { topK: 10 })
+        YIELD node1, node2, similarity
+        WHERE gds.util.asNode(node1).title = '${title}'
+        RETURN gds.util.asNode(node1).title AS News1, gds.util.asNode(node2).title AS News2, similarity
+        ORDER BY News1`
+      );
+
+      console.log(" recommendByNodeSimilarity result: ", result.records.map((ele) => {
+        return ele._fields  
+      }));
+      return result.records.map((ele) => {
+        return ele._fields  
+      })
+    } catch (err){
+      console.log("세션 닫혔음 .. ", err);
+      return [];
+    } finally {
+      console.log("오지 ???");
+      await session.close();
     }
 
   }
