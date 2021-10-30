@@ -102,32 +102,56 @@ ______________________
                 {batchSize : 10000})
                 YIELD batch, operations
             ```
-        ________________________________________________________________
-
-        2. gds.graph 설정 For page rank
-
-
-            - gds.graph.create 에러 
-
             - neo4j 설정 변경
             
             ```
                 dbms.security.procedures.unrestricted=algo.*,apoc.*, gds.*
             ```
 
-            cypher1 : graph 생성
+            - cypher1 : graph 생성
 
             ```
                 CALL gds.graph.create('News_Inter', 'News', 'Inter', {relationshipProperties: 'w'})
             ```
+        ________________________________________________________________
 
-            cypher2: 노드에 속성 적용
+        2. Node similarity 적용 
             
             ```
-                CALL gds.pageRank.write('News_Inter', 
-                {maxIterations: 20, dampingFactor: 0.85, relationshipWeightProperty: 'w', writeProperty: 'pagerank'})
-                YIELD nodePropertiesWritten, ranIterations
+                 CALL gds.nodeSimilarity.write('News_Inter', {
+                    writeRelationshipType: 'SIMILAR',
+                    writeProperty: 'score'
+                })
+                YIELD nodesCompared, relationshipsWritten
             ```
+
+            - topK 
+            ```
+                CALL gds.nodeSimilarity.stream('News_Inter', { topK: 10 })
+                YIELD node1, node2, similarity
+                RETURN gds.util.asNode(node1).title AS News1, gds.util.asNode(node2).title AS News2, similarity
+                ORDER BY News1
+            ```
+
+            - topK ( 타이틀이 'ㅁㅁㅁㅁ' 인 뉴스와 비슷한 뉴스들 )
+            
+            ```
+            CALL gds.nodeSimilarity.stream('News_Inter', { topK: 10 })
+            YIELD node1, node2, similarity
+            WHERE gds.util.asNode(node1).title = '1000만원씩동부구치소확진수용자들국가상대손배소'
+            RETURN gds.util.asNode(node1).title AS News1, gds.util.asNode(node2).title AS News2, similarity
+            ORDER BY News1
+            ```
+        _____________________________________________________________________________________________________
+        
+       
+
+        CALL gds.nodeSimilarity.stream('News_Inter', { topK: 10 })
+        YIELD node1, node2, similarity
+        RETURN gds.util.asNode(node1).title AS News1, gds.util.asNode(node2).title AS News2, similarity
+        ORDER BY News1
+
+
         ________________________________________________________________
         3. GDS - community detection (louvain)
 
