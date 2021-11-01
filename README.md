@@ -1,10 +1,19 @@
 
-### tf-idf 적용중  (news->[r:Include]->Word)
+### tf-idf 벡터 적용 cypher (news->[r:Include]->Word)
 ```
 CALL apoc.periodic.iterate(
-'MATCH (:News) WITH count(*) AS totalNews MATCH (a1:News) UNWIND a1.word AS awd match (w:Word {name: a1.word}),(n:News) WHERE ID(n) = ID(a1) RETURN w, n, totalNews',
-'WITH n, w, totalNews,size((n)-[:Include]->(w)) AS occurrencesInNews, size((n)-[:Include]->()) AS wordsInNews, size(()-[:Include]->(w)) AS newsWithWord WITH n, w, totalNews, 1.0 * occurrencesInNews / wordsInNews AS tf, log10( totalNews / newsWithWord ) AS idf MERGE (n)-[r:Include]->(w) SET r.socre = tf * idf',{batchSize: 10000}) YIELD batch, operations
+'MATCH (:News) WITH count(*) AS totalNews 
+ MATCH (a1:News) UNWIND a1.word AS awd match (w:Word {name: awd}),
+ (n:News) WHERE ID(n) = ID(a1) RETURN w, n, totalNews',
+'WITH n, w, totalNews,size((n)-[:Include]->(w)) AS occurrencesInNews, 
+ size((n)-[:Include]->()) AS wordsInNews, 
+ size(()-[:Include]->(w)) AS newsWithWord WITH n, w, totalNews, 
+ 1.0 * occurrencesInNews / wordsInNews AS tf, 
+ log10( totalNews / newsWithWord ) AS idf 
+  MERGE (n)-[r:Include]->(w) SET r.score = tf * idf',{batchSize: 10000}) YIELD batch, operations
 ```
+
+
 
 ### 크롤러 실행법
 
@@ -71,6 +80,13 @@ ______________________________
 
 
 ______________________
+
+## 참고 
+score 가 있는 지 없는 지 확인 
+```
+MATCH p=()-[r:Include]->() WHERE r.score IS NOT NULL
+return p  LIMIT 100
+```
 
 ## 참고
    https://adamcowley.co.uk/neo4j/calculating-tf-idf-score-cypher/
