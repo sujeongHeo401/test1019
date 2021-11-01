@@ -1,11 +1,9 @@
 
-### tf-idf 적용  (news->[r:Include]->Word)
+### tf-idf 적용중  (news->[r:Include]->Word)
 ```
 CALL apoc.periodic.iterate(
-'MATCH (w:Word)<-[r:Include]-(n:News), (a:News) RETURN n, w, r, count(a) AS totalNews, size((n)-[:Include]->(w)) AS occurrencesInNews, size((n)-[:Include]->()) AS wordsInNews, size(()-[:Include]->(w)) AS newsWithWord, 1.0 * size((n)-[:Include]->(w)) / size((n)-[:Include]->()) AS tf,log10( count(a)/ size(()-[:Include]->(w))) AS idf',
-'ON MERGE SET r.socre = tf * idf  RETURN n, w.name, tf * idf as tfIdf',
-{batchSize: 10000})
-YIELD batch, operations
+'MATCH (:News) WITH count(*) AS totalNews MATCH (a1:News) UNWIND a1.word AS awd match (w:Word {name: a1.word}),(n:News) WHERE ID(n) = ID(a1) RETURN w, n, totalNews',
+'WITH n, w, totalNews,size((n)-[:Include]->(w)) AS occurrencesInNews, size((n)-[:Include]->()) AS wordsInNews, size(()-[:Include]->(w)) AS newsWithWord WITH n, w, totalNews, 1.0 * occurrencesInNews / wordsInNews AS tf, log10( totalNews / newsWithWord ) AS idf MERGE (n)-[r:Include]->(w) SET r.socre = tf * idf',{batchSize: 10000}) YIELD batch, operations
 ```
 
 ### 크롤러 실행법
