@@ -12,7 +12,15 @@ CALL apoc.periodic.iterate(
  log10( totalNews / newsWithWord ) AS idf 
   MERGE (n)-[r:Include]->(w) SET r.score = tf * idf',{batchSize: 10000}) YIELD batch, operations
 ```
-
+### cosine similarity 예시
+```
+MATCH (n1:News {title: '전기차시대달라지는자동차디자인과변하지않는요소들김도형기자의휴일차담'})-[include1:Include]->(word)
+MATCH (n2:News)-[include2:Include]->(word) WHERE n2 <> n1 and include1.score IS NOT NULL and include2.score IS NOT NULL
+RETURN n1.title AS from,
+       n2.title AS to,
+       gds.alpha.similarity.cosine(collect(include1.score), collect(include2.score)) AS similarity
+ORDER BY similarity DESC LIMIT 10
+```
 
 
 ### 크롤러 실행법
