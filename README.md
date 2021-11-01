@@ -1,3 +1,13 @@
+
+### tf-idf 적용  (news->[r:Include]->Word)
+```
+CALL apoc.periodic.iterate(
+'MATCH (w:Word)<-[r:Include]-(n:News), (a:News) RETURN n, w, r, count(a) AS totalNews, size((n)-[:Include]->(w)) AS occurrencesInNews, size((n)-[:Include]->()) AS wordsInNews, size(()-[:Include]->(w)) AS newsWithWord, 1.0 * size((n)-[:Include]->(w)) / size((n)-[:Include]->()) AS tf,log10( count(a)/ size(()-[:Include]->(w))) AS idf',
+'ON MERGE SET r.socre = tf * idf  RETURN n, w.name, tf * idf as tfIdf',
+{batchSize: 10000})
+YIELD batch, operations
+```
+
 ### 크롤러 실행법
 
 ```
