@@ -1,5 +1,5 @@
 const neo4j = require('neo4j-driver');
-const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("test1028", "test1028"));
+const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "test1102"));
 export const  getNewsList = async(page) => {
     let session = driver.session();
     console.log("sdfsdf");
@@ -88,6 +88,41 @@ export const  getNewsList = async(page) => {
       );
 
       console.log("result: ", result.records.map((ele) => {
+        return ele._fields  
+      }));
+      return result.records.map((ele) => {
+        return ele._fields  
+      })
+    } catch (err){
+      console.log("세션 닫혔음 .. ", err);
+      return [];
+    } finally {
+      console.log("오지 ???");
+      await session.close();
+    }
+
+  }
+
+  export const  recommendByCoSimilarity = async(title) => {
+    let session = driver.session();
+    try {
+      // const result =await session.run(
+      // `CALL gds.nodeSimilarity.stream('News_Inter', { topK: 10 })
+      //   YIELD node1, node2, similarity
+      //   WHERE gds.util.asNode(node1).title = '${title}'
+      //   RETURN gds.util.asNode(node1).title AS News1, gds.util.asNode(node2).title AS News2, similarity
+      //   ORDER BY News1`
+      // );
+      const result =await session.run(
+          `MATCH (n1:News {title: '${title}'})-[include1:Include]->(word)
+          MATCH (n2:News)-[include2:Include]->(word) WHERE n2 <> n1 and include1.score IS NOT NULL and include2.score IS NOT NULL
+          RETURN n1.title AS from,
+                 n2.title AS to,
+                 gds.alpha.similarity.cosine(collect(include1.score), collect(include2.score)) AS similarity
+          ORDER BY similarity DESC LIMIT 10`
+        );
+
+      console.log(" recommendByCoSimilarity result: ", result.records.map((ele) => {
         return ele._fields  
       }));
       return result.records.map((ele) => {

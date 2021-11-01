@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import { getNewsList, recommendByWord, recommendByNews, recommendByCommunityDetection, recommendByPageRank, recommendByNodeSimilarity} from "./utils";
+import { getNewsList, recommendByWord, recommendByNews, recommendByCommunityDetection, recommendByCoSimilarity, recommendByNodeSimilarity} from "./utils";
 import './App.css';
 import React, { useEffect, useState } from 'react';
  
@@ -25,7 +25,7 @@ function App() {
     setRecommendNews([]); //초기화
     console.log("value:" ,value);
     let recByNews = await recommendByNews(value);
-    let recNewSimilarity = await recommendByNodeSimilarity(value);
+    let recNewSimilarity = await recommendByCoSimilarity(value);
     console.log("recByNewsSimilarity: ", recNewSimilarity);
     let recByNewsCommunityDetection = await recommendByCommunityDetection(value);
     setRecommendNews(recByNews);
@@ -67,7 +67,7 @@ function App() {
   
   console.log("recommendNews", recommendNews);
   let recBrr = recommendNews?recommendNews.map((value, key) => <li key = {key}>{value[0]}</li>):[];
-  let recBrrSimilarity = recoBySimilarity?recoBySimilarity.map((value, key) => <li key = {key}>{value[0].properties.title}</li>):[];
+  let recBrrSimilarity = recoBySimilarity?recoBySimilarity.map((value, key) => <li key = {key}>{value[1]}</li>):[];
   let recBrrCommunityDetection = recommendNewsByCommunityDetection?recommendNewsByCommunityDetection.map((value, key) => <li key = {key}>{value[0]}</li>):[];
 
   return (
@@ -112,7 +112,7 @@ function App() {
               }
             </div>
             <div style ={{ border : '1px solid black', marginRight: 10}}>
-              <p><b>비슷한 뉴스 /w similarity </b></p>
+              <p><b>비슷한 뉴스 /w 코사인 유사도 </b></p>
               { recoBySimilarity.length && 
                 <>
                   
